@@ -297,7 +297,7 @@ export const TermOfServicePage = () => {
                   <label key={key} className="flex items-center gap-2 cursor-pointer bg-white px-3 py-1 rounded border border-slate-200 hover:bg-gray-100">
                     <input
                       type="checkbox"
-                      className="w-4 h-4"
+                      className="w-4 h-4 !relative"
                       checked={seo.robots[key]}
                       onChange={(e) =>
                         setSeo({
