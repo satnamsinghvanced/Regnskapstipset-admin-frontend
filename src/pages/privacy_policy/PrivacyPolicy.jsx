@@ -284,7 +284,6 @@ export const PrivacyPolicyPage = () => {
                     <label key={key} className="flex items-center gap-2 cursor-pointer bg-white px-3 py-1 rounded border border-slate-200 shadow-sm">
                       <input
                         type="checkbox"
-                        className="!relative"
                         checked={seo.robots[key]}
                         onChange={(e) =>
                           setSeo({
