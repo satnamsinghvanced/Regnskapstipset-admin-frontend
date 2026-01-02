@@ -114,7 +114,7 @@ const SideBar = ({ toggleSidebar, isMiniSidebarOpen, onCloseSidebar }) => {
           icon: FaQ,
         },
         {
-          name: "Accounting Companies Page",
+          name: "Companies Page",
           href: ROUTES.REAL_ESTATE_AGENTS,
           icon: GoProjectRoadmap,
         },
