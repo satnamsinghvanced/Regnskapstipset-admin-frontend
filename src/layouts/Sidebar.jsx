@@ -33,7 +33,7 @@ import { MdOutlineDynamicFeed } from "react-icons/md";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchTheme } from "../store/slices/website_settingsSlice";
-
+import { GoProjectRoadmap } from "react-icons/go";
 const SideBar = ({ toggleSidebar, isMiniSidebarOpen, onCloseSidebar }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -114,9 +114,9 @@ const SideBar = ({ toggleSidebar, isMiniSidebarOpen, onCloseSidebar }) => {
           icon: FaQ,
         },
         {
-          name: "Real Estate Agents",
+          name: "Accounting Companies Page",
           href: ROUTES.REAL_ESTATE_AGENTS,
-          icon: MdOutlineRealEstateAgent,
+          icon: GoProjectRoadmap,
         },
         {
           name: "Footer",
