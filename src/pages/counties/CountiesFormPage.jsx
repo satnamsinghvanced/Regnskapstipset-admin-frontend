@@ -138,10 +138,10 @@ const CountiesFormPage = () => {
 
         companies: Array.isArray(selectedCounty.companies)
           ? selectedCounty.companies.map((c, index) => ({
-            companyId: String(c.companyId._id || c.companyId),
-            rank: c.rank ?? index + 1,
-            isRecommended: !!c.isRecommended,
-          }))
+              companyId: String(c.companyId._id || c.companyId),
+              rank: c.rank ?? index + 1,
+              isRecommended: !!c.isRecommended,
+            }))
           : [],
 
         metaTitle: selectedCounty.metaTitle || "",
@@ -156,31 +156,31 @@ const CountiesFormPage = () => {
         ogDescription: selectedCounty.ogDescription || "",
         ogImage: selectedCounty.ogImage || "",
         ogType: selectedCounty.ogType || "website",
-
+        //New From  meglertip
         robots:
           typeof selectedCounty.robots === "string"
             ? (() => {
-              try {
-                return JSON.parse(selectedCounty.robots);
-              } catch {
-                return {
-                  noindex: false,
-                  nofollow: false,
-                  noarchive: false,
-                  nosnippet: false,
-                  noimageindex: false,
-                  notranslate: false,
-                };
-              }
-            })()
+                try {
+                  return JSON.parse(selectedCounty.robots);
+                } catch {
+                  return {
+                    noindex: false,
+                    nofollow: false,
+                    noarchive: false,
+                    nosnippet: false,
+                    noimageindex: false,
+                    notranslate: false,
+                  };
+                }
+              })()
             : selectedCounty.robots || {
-              noindex: false,
-              nofollow: false,
-              noarchive: false,
-              nosnippet: false,
-              noimageindex: false,
-              notranslate: false,
-            },
+                noindex: false,
+                nofollow: false,
+                noarchive: false,
+                nosnippet: false,
+                noimageindex: false,
+                notranslate: false,
+              },
       });
 
       setPreviewImage(selectedCounty.icon || "");
@@ -330,7 +330,9 @@ const CountiesFormPage = () => {
         ).unwrap();
         toast.success("County updated!");
       } else {
-        await dispatch(createCounty({ countyData: payload, isFormData })).unwrap();
+        await dispatch(
+          createCounty({ countyData: payload, isFormData })
+        ).unwrap();
         toast.success("County created!");
       }
 
@@ -390,9 +392,10 @@ const CountiesFormPage = () => {
                   value={form[field.name] ?? ""}
                   onChange={handleChange}
                   className={`mt-1 w-full rounded-xl border px-3 py-2 text-sm text-slate-900 outline-none transition
-                    ${errors[field.name]
-                      ? "border-red-400 focus:border-red-500"
-                      : "border-slate-200 focus:border-primary"
+                    ${
+                      errors[field.name]
+                        ? "border-red-400 focus:border-red-500"
+                        : "border-slate-200 focus:border-primary"
                     }`}
                 />
                 {errors[field.name] && (
@@ -815,8 +818,8 @@ const CountiesFormPage = () => {
               {submitting
                 ? "Saving..."
                 : isEditMode
-                  ? "Save Changes"
-                  : "Create County"}
+                ? "Save Changes"
+                : "Create County"}
             </button>
 
             {isDisabled && hasErrors && (
