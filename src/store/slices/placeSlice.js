@@ -25,7 +25,7 @@ export const getPlaceById = createAsyncThunk(
     try {
       const { data } = await api.get(`/places/detail/${id}`);
 
-       if (data?.data?.icon) {
+      if (data?.data?.icon) {
         data.data.icon = fixImageUrl(data.data.icon);
       }
       return data;
@@ -37,7 +37,7 @@ export const getPlaceById = createAsyncThunk(
 
 export const createPlace = createAsyncThunk(
   "places/createPlace",
-  async (placeData, { rejectWithValue }) => {
+  async ({ placeData }, { rejectWithValue }) => {
     try {
       const { data } = await api.post("/places/create", placeData);
       return data;
