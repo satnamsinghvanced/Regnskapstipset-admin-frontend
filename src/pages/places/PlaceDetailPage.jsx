@@ -135,15 +135,15 @@ const PlaceDetailPage = () => {
         description="Preview the full content for this place."
         buttonsList={headerButtons}
       />
-   {selectedPlace.icon && (
-            <div className="flex justify-center mb-6">
-              <img
-                src={(selectedPlace.icon)}
-                alt={`${selectedPlace.name} icon`}
-                className="h-24 w-24 rounded-full object-cover border border-slate-200"
-              />
-            </div>
-          )}
+      {selectedPlace.icon && (
+        <div className="flex justify-center mb-6">
+          <img
+            src={selectedPlace.icon ? `${import.meta.env.VITE_API_URL_IMAGE}/${selectedPlace.icon}` : ""}
+            alt={`${selectedPlace.name} icon`}
+            className="h-24 w-24 rounded-full object-cover border border-slate-200"
+          />
+        </div>
+      )}
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="space-y-6 p-6">
           {/* BASIC DETAILS */}
@@ -162,7 +162,7 @@ const PlaceDetailPage = () => {
               </div>
             ))}
           </div>
-       
+
 
           {/* EXCERPT */}
           {selectedPlace.excerpt && (
@@ -198,7 +198,7 @@ const PlaceDetailPage = () => {
             </p>
 
             {Array.isArray(selectedPlace.companies) &&
-            selectedPlace.companies.length > 0 ? (
+              selectedPlace.companies.length > 0 ? (
               <div className="space-y-3">
                 {[...selectedPlace.companies]
                   .sort((a, b) => (a.rank ?? 0) - (b.rank ?? 0))

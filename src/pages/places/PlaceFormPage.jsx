@@ -172,7 +172,7 @@ const PlaceFormPage = () => {
 
         robots: selectedPlace.robots,
       });
-      setPreviewImage(selectedPlace.icon || "");
+      setPreviewImage(selectedPlace.icon ? `${import.meta.env.VITE_API_URL_IMAGE}/${selectedPlace.icon}` : "");
     }
   }, [isEditMode, selectedPlace]);
 
