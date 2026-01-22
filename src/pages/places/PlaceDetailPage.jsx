@@ -138,7 +138,7 @@ const PlaceDetailPage = () => {
       {selectedPlace.icon && (
         <div className="flex justify-center mb-6">
           <img
-            src={selectedPlace.icon ? `${import.meta.env.VITE_API_URL_IMAGE}/${selectedPlace.icon}` : ""}
+            src={selectedPlace.icon}
             alt={`${selectedPlace.name} icon`}
             className="h-24 w-24 rounded-full object-cover border border-slate-200"
           />
