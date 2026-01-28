@@ -316,7 +316,9 @@ const PlaceFormPage = () => {
         toast.success("Place created!");
       }
 
-      navigate("/places");
+     const page = searchParams.get('page');
+      const redirectUrl = page ? `/places?page=${page}` : "/places";
+      navigate(redirectUrl);
     } catch (err) {
       console.error(err);
       toast.error(
