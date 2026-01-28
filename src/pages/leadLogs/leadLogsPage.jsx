@@ -5,7 +5,7 @@ import {
   updateLeadProfit,
   updateLeadStatus,
 } from "../../store/slices/leadLogsSlice";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useSearchParams } from "react-router-dom";
 import PageHeader from "../../components/PageHeader";
 import Pagination from "../../UI/pagination";
 import { FaRegEye } from "react-icons/fa6";
@@ -13,10 +13,16 @@ import { FaRegEye } from "react-icons/fa6";
 const LeadLogs = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+       const [searchParams, setSearchParams] = useSearchParams();
 
   const { leads = [], loading, error, pagination } = useSelector((s) => s.lead);
 
-  const [page, setPage] = useState(1);
+    const getInitialPage = () => {
+    const pageParam = searchParams.get('page');
+    return pageParam ? parseInt(pageParam, 10) || 1 : 1;
+  };
+
+  const [page, setPage] = useState(getInitialPage);
   const limit = 10;
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -35,6 +41,28 @@ const LeadLogs = () => {
 
     return () => clearTimeout(delay);
   }, [page, search, status]);
+    // Update page when URL changes
+  useEffect(() => {
+    const pageParam = searchParams.get('page');
+    const newPage = pageParam ? parseInt(pageParam, 10) || 1 : 1;
+    if (newPage !== page) {
+      setPage(newPage);
+    }
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Update URL when page changes (but not when initializing)
+  useEffect(() => {
+    const pageParam = searchParams.get('page');
+    const currentPageInUrl = pageParam ? parseInt(pageParam, 10) || 1 : 1;
+    if (page !== currentPageInUrl) {
+      if (page > 1) {
+        setSearchParams({ page: page.toString() });
+      } else {
+        setSearchParams({});
+      }
+    }
+  }, [page, searchParams, setSearchParams]);
+  
 
   const badgeColor = (status) => {
     switch (status) {
@@ -210,7 +238,7 @@ const LeadLogs = () => {
                       <td className="px-6 py-4 text-sm">
                         <button
                           className="rounded-full border border-slate-200 p-2 text-slate-500 hover:text-slate-900"
-                          onClick={() => navigate(`/leads/${lead._id}`)}
+                          onClick={() => navigate(`/leads/${lead._id}?page=${page}`)}
                         >
                           <FaRegEye size={16} />
                         </button>
