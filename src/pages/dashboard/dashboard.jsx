@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../../api/axios";
 import PageHeader from "../../components/PageHeader";
 import Skeleton from "react-loading-skeleton";
 import dayjs from "dayjs";
@@ -12,6 +12,7 @@ import {
   CartesianGrid,
   ResponsiveContainer,
 } from "recharts";
+import { toast } from "react-toastify";
 const DashboardSkeleton = () => {
   return (
     <div className="space-y-6">
@@ -111,31 +112,52 @@ const DashboardSkeleton = () => {
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [statsType, setStatsType] = useState(null);
-
+  const [partnerName, setPartnerName] = useState("");
+  const [partners, setPartners] = useState([]);
+  const [partnerSearch, setPartnerSearch] = useState("");
   const [startDate, setStartDate] = useState(
-    dayjs().startOf("month").format("YYYY-MM-DD")
+    dayjs().startOf("month").format("YYYY-MM-DD"),
   );
   const [endDate, setEndDate] = useState(
-    dayjs().endOf("month").format("YYYY-MM-DD")
+  dayjs().format("YYYY-MM-DD")
   );
   const [range, setRange] = useState("");
   const fetchStats = () => {
+     if (dayjs(endDate).isBefore(dayjs(startDate))) {
+    toast.error("End date cannot be less than start date");
+    return; 
+  }
     axios
       .get(
-        `${
-          import.meta.env.VITE_API_URL
-        }/dashboard/stats?start=${startDate}&end=${endDate}`
+        `/dashboard/stats?start=${startDate}&end=${endDate}&partnerName=${partnerName}`,
       )
       .then((res) => setStats(res.data))
       .catch(() => {});
   };
-
   useEffect(() => {
     fetchStats();
-  }, [startDate, endDate]);
+  }, [startDate, endDate, partnerName]);
+
+  const fetchPartners = (search = "") => {
+    axios
+      .get(`/partners/all?search=${search}`)
+      .then((res) => setPartners(res.data?.data || []))
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchPartners();
+  }, []);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchPartners(partnerSearch);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [partnerSearch]);
   const fetchStatsOfType = () => {
     axios
-      .get(`${import.meta.env.VITE_API_URL}/dashboard/total-leads`)
+      .get(`/dashboard/total-leads`)
       .then((res) => setStatsType(res.data))
       .catch(() => {});
   };
@@ -147,7 +169,7 @@ const Dashboard = () => {
   if (!stats || !statsType) return <DashboardSkeleton />;
 
   const { topPartners, growthData, totals, trendlineData } = stats;
-  console.log(statsType);
+  console.log("stats", stats);
 
   return (
     <div className="space-y-6">
@@ -156,7 +178,6 @@ const Dashboard = () => {
         description="Overview of leads, performance, and partner ranking."
       />
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Total Leads Box */}
         <div className="rounded-xl border border-slate-200 bg-white p-6">
           <p className="text-sm text-slate-500">Total Leads Sent</p>
           <p className="mt-4"> </p>
@@ -164,8 +185,21 @@ const Dashboard = () => {
             {statsType?.totalLeads || 0}
           </p>
         </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <p className="text-sm text-slate-500">Total Reject Leads</p>
+          <p className="mt-5"> </p>
+          <p className="text-3xl font-bold text-slate-900">
+            {totals?.totalRejects || 0}
+          </p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <p className="text-sm text-slate-500">Total Pending Leads</p>
+          <p className="mt-5"> </p>
+          <p className="text-3xl font-bold text-slate-900">
+            {totals?.totalPending || 0}
+          </p>
+        </div>
 
-        {/* Dynamic Lead Types Boxes */}
         <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
           {Object.entries(statsType.data || {}).map(([label, value], index) => (
             <div
@@ -183,24 +217,27 @@ const Dashboard = () => {
         <div className=" ">
           <h3 className="text-lg font-semibold">Filter by Date Range</h3>
         </div>
-        <div className=" flex items-center gap-4">
+        <div className="flex items-center flex-wrap gap-4">
           <div className="flex flex-wrap gap-4">
-            <div className="">
+            <div className="flex flex-col gap-1">
               <label className="text-sm text-slate-600">Start Date</label>
               <input
                 type="date"
-                className="border border-slate-200 p-2 rounded w-full"
+                className="border border-slate-200 p-2 rounded w-56"
                 value={startDate}
+                max={dayjs().format("YYYY-MM-DD")}
                 onChange={(e) => setStartDate(e.target.value)}
               />
             </div>
 
-            <div>
+            <div className="flex flex-col gap-1">
               <label className="text-sm text-slate-600">End Date</label>
               <input
                 type="date"
                 className="border border-slate-200 p-2 rounded w-full"
                 value={endDate}
+                min={startDate}
+                max={dayjs().format("YYYY-MM-DD")}
                 onChange={(e) => setEndDate(e.target.value)}
               />
             </div>
@@ -211,7 +248,7 @@ const Dashboard = () => {
               Quick Range
             </label>
             <select
-              className="border border-slate-200 p-2 rounded w-40"
+              className="border border-slate-200 p-2 rounded w-56"
               value={range}
               onChange={(e) => {
                 setRange(e.target.value);
@@ -239,7 +276,6 @@ const Dashboard = () => {
                     start = today.startOf("month").format("YYYY-MM-DD");
                     end = today.format("YYYY-MM-DD");
                     break;
-
                   default:
                     return;
                 }
@@ -256,87 +292,104 @@ const Dashboard = () => {
               <option value="month">This Month</option>
             </select>
           </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h3 className="font-semibold text-lg mb-1">Lead Trend</h3>
-        <p className="text-xs text-slate-500 mb-4">
-          Trend of leads between selected dates
-        </p>
-
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={
-                trendlineData?.length === 1
-                  ? [
-                      ...trendlineData,
-                      {
-                        ...trendlineData[0],
-                        date: trendlineData[0].date + " ",
-                      },
-                    ]
-                  : trendlineData || []
-              }
+          <div>
+            <label className="text-sm text-slate-600 block mb-1">
+              Filter by Partner
+            </label>
+            <select
+              className="border border-slate-200 p-2 rounded w-56"
+              value={partnerName}
+              onChange={(e) => setPartnerName(e.target.value)}
             >
-              <defs>
-                <linearGradient id="colorLead" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#4F46E5" stopOpacity={0.8} />
-                  <stop offset="100%" stopColor="#4F46E5" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-
-              <CartesianGrid strokeDasharray="4 4" stroke="#ddd" />
-
-              <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-
-              <Tooltip
-                contentStyle={{
-                  background: "white",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                }}
-              />
-
-              <Line
-                type="monotone"
-                dataKey="leads"
-                stroke="#4F46E5"
-                strokeWidth={3}
-                dot={{ fill: "#4F46E5", strokeWidth: 2, r: 5 }}
-                activeDot={{ r: 7, stroke: "#4F46E5", strokeWidth: 2 }}
-                fill="url(#colorLead)"
-              />
-            </LineChart>
-          </ResponsiveContainer>
+              <option value="">All Partners</option>
+              {partners.map((p) => (
+                <option key={p._id} value={p.name}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
+
+     <div className="bg-white rounded-xl border border-slate-200 p-6">
+  <h3 className="font-semibold text-lg mb-1">Lead Trend</h3>
+  <p className="text-xs text-slate-500 mb-4">
+    Trend of leads between selected dates
+  </p>
+
+  {trendlineData && trendlineData.length > 0 ? (
+    <div className="h-64 outline-0">
+      <ResponsiveContainer className="outline-0" width="100%" height="100%">
+        <LineChart
+          data={
+            trendlineData.length === 1
+              ? [
+                  ...trendlineData,
+                  {
+                    ...trendlineData[0],
+                    date: trendlineData[0].date + " ",
+                  },
+                ]
+              : trendlineData
+          }
+        >
+          <CartesianGrid strokeDasharray="4 4" stroke="#ddd" />
+          <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+          <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
+          <Tooltip />
+
+          <Line
+            type="monotone"
+            dataKey="leads"
+            stroke="#4F46E5"
+            strokeWidth={3}
+            dot={{ r: 5 }}
+            activeDot={{ r: 7 }}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  ) : (
+    <div className="h-64 flex items-center justify-center text-slate-500">
+      No Stats to Show
+    </div>
+  )}
+</div>
+
 
       <div className="border border-slate-200 rounded-xl bg-white">
-        <div className="border border-slate-200 px-6 py-4 rounded-xl">
+        <div className="border-0 border-slate-200 px-6 py-4 rounded-t-xl">
           <h3 className="font-semibold text-lg">Top 5 Partners</h3>
           <p className="text-xs text-slate-500">Based on total leads</p>
         </div>
 
-        <ul className="divide-y">
-          {topPartners?.map((p, i) => (
-            <li key={i} className="px-6 py-4 flex justify-between">
-              <span className="font-medium"> {p?.partnerName}</span>
-              <span className="font-semibold">{p?.totalLeads} Leads</span>
-            </li>
-          ))}
-        </ul>
+       <ul>
+  {topPartners && topPartners.length > 0 ? (
+    topPartners.map((p, i) => (
+      <li
+        key={i}
+        className="px-6 py-4 flex justify-between border-t border-slate-200"
+      >
+        <span className="font-medium">{p?.partnerName}</span>
+        <span className="font-semibold">{p?.totalLeads} Leads</span>
+      </li>
+    ))
+  ) : (
+    <li className="px-6 py-6 text-center text-slate-500">
+      No partners found for selected dates
+    </li>
+  )}
+</ul>
+
       </div>
 
       <div className="border-slate-200 rounded-xl bg-white">
-        <div className="border border-slate-200 px-6 py-4 rounded-xl">
+        <div className="border border-slate-200 px-6 border-b-0 rounded-t-xl py-4">
           <h3 className="font-semibold text-lg">Growth From Last Month</h3>
           <p className="text-xs text-slate-500">Lead performance comparison</p>
         </div>
-        <div className="rounded-xl border border-slate-200">
+        <div className="rounded-b-xl border border-t-1 border-slate-200 overflow-scroll">
           <table className="w-full  border-collapse text-sm">
             <thead>
               <tr className=" text-left">
@@ -347,26 +400,44 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {growthData?.map((row, i) => (
-                <tr
-                  key={i}
-                  className="border border-slate-200 border-x-0 border-b-0"
-                >
-                  <td className="px-6 py-3">{row?.partnerName}</td>
-                  <td className="px-6 py-3">{row?.lastMonth || 0}</td>
-                  <td className="px-6 py-3">{row?.leadsThisMonth || 0}</td>
-                  <td
-                    className={`px-6 py-3 font-semibold ${
-                      row?.growthPercent >= 0
-                        ? "text-emerald-600"
-                        : "text-red-600"
-                    }`}
-                  >
-                    {row?.growthPercent}%
-                  </td>
-                </tr>
-              ))}
-            </tbody>
+  {growthData && growthData.length > 0 ? (
+    growthData.map((row, i) => (
+      <tr
+        key={i}
+        className="border border-slate-200 border-x-0 border-b-0"
+      >
+        <td className="px-6 py-4 font-medium">
+          {row.partnerName}
+        </td>
+        <td className="px-6 py-4 text-center">
+          {row.leadsThisMonth}
+        </td>
+        <td className="px-6 py-4 text-center">
+          {row.lastMonthLeads}
+        </td>
+        <td
+          className={`px-6 py-4 text-center font-semibold ${
+            row.growthPercent >= 0
+              ? "text-green-600"
+              : "text-red-600"
+          }`}
+        >
+          {row.growthPercent}%
+        </td>
+      </tr>
+    ))
+  ) : (
+    <tr>
+      <td
+        colSpan={4}
+        className="px-6 py-6 text-center text-slate-500"
+      >
+        No partners found for selected dates
+      </td>
+    </tr>
+  )}
+</tbody>
+
           </table>
         </div>
       </div>
