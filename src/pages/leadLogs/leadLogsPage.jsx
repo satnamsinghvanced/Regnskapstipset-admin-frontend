@@ -5,7 +5,7 @@ import {
   updateLeadProfit,
   updateLeadStatus,
 } from "../../store/slices/leadLogsSlice";
-import { useNavigate,useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import PageHeader from "../../components/PageHeader";
 import Pagination from "../../UI/pagination";
 import { FaRegEye } from "react-icons/fa6";
@@ -13,11 +13,11 @@ import { FaRegEye } from "react-icons/fa6";
 const LeadLogs = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-       const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { leads = [], loading, error, pagination } = useSelector((s) => s.lead);
 
-    const getInitialPage = () => {
+  const getInitialPage = () => {
     const pageParam = searchParams.get('page');
     return pageParam ? parseInt(pageParam, 10) || 1 : 1;
   };
@@ -41,7 +41,7 @@ const LeadLogs = () => {
 
     return () => clearTimeout(delay);
   }, [page, search, status]);
-    // Update page when URL changes
+  // Update page when URL changes
   useEffect(() => {
     const pageParam = searchParams.get('page');
     const newPage = pageParam ? parseInt(pageParam, 10) || 1 : 1;
@@ -62,7 +62,7 @@ const LeadLogs = () => {
       }
     }
   }, [page, searchParams, setSearchParams]);
-  
+
 
   const badgeColor = (status) => {
     switch (status) {
@@ -174,7 +174,23 @@ const LeadLogs = () => {
                       <td className="px-6 py-4">{lead.uniqueId}</td>
 
                       {/* Name */}
-                      <td className="px-6 py-4">{values.name || "-"}</td>
+                      <td className="px-6 py-4">
+                        <button
+                        className="hover:text-blue-500 px-6 py-4"
+
+                        onClick={(e) => {
+                          if (e.ctrlKey || e.metaKey || e.button === 1) {
+                            window.open(`/leads/${lead._id}?page=${page}`, "_blank");
+                            return;
+                          } else {
+                            navigate(`/leads/${lead._id}?page=${page}`)
+                          }
+                        }
+                        }
+                      >
+                        {values.name || "-"}
+                      </button>
+                      </td>
 
                       {/* Email */}
                       <td className="px-6 py-4">{values.email || "-"}</td>
@@ -186,8 +202,8 @@ const LeadLogs = () => {
                       <td className="px-6 py-4">
                         {lead.partnerIds?.length
                           ? lead.partnerIds.map((p, i) => (
-                              <div key={i}>{p.name}</div>
-                            ))
+                            <div key={i}>{p.name}</div>
+                          ))
                           : "-"}
                       </td>
 
@@ -238,7 +254,15 @@ const LeadLogs = () => {
                       <td className="px-6 py-4 text-sm">
                         <button
                           className="rounded-full border border-slate-200 p-2 text-slate-500 hover:text-slate-900"
-                          onClick={() => navigate(`/leads/${lead._id}?page=${page}`)}
+                          onClick={(e) => {
+                            if (e.ctrlKey || e.metaKey || e.button === 1) {
+                              window.open(`/leads/${lead._id}?page=${page}`, "_blank");
+                              return;
+                            } else {
+                              navigate(`/leads/${lead._id}?page=${page}`)
+                            }
+                          }
+                          }
                         >
                           <FaRegEye size={16} />
                         </button>

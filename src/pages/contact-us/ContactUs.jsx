@@ -15,7 +15,7 @@ import ConfirmModal from "../../UI/ConfirmDeleteModal";
 const ContactUsListPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-        const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const contactState = useSelector((state) => state.contact);
   const { data, loading } = contactState;
   const [modalOpen, setModalOpen] = useState(false);
@@ -23,7 +23,7 @@ const ContactUsListPage = () => {
   const entries = data?.items || [];
   const total = data?.total || 0;
 
- // Initialize page from URL
+  // Initialize page from URL
   const getInitialPage = () => {
     const pageParam = searchParams.get("page");
     return pageParam ? parseInt(pageParam, 10) || 1 : 1;
@@ -139,7 +139,20 @@ const ContactUsListPage = () => {
                   <tr key={item._id} className="hover:bg-slate-50">
                     <td className="px-6 py-4">{(page - 1) * limit + i + 1}</td>
                     <td className="px-6 py-4 font-medium text-slate-900">
-                      {item.name}
+                      <button
+                        className="hover:text-blue-500 px-6 py-4"
+
+                        onClick={(e) => {
+                          if (e.ctrlKey || e.metaKey || e.button === 1) {
+                            window.open(`/contact/${item._id}?page=${page}`, "_blank");
+                            return;
+                          } else {
+                            navigate(`/contact/${item._id}?page=${page}`)
+                          }
+                        }}
+                      >
+                        {item.name}
+                      </button>
                     </td>
                     <td className="px-6 py-4">{item.email}</td>
                     <td className="px-6 py-4">{item.phone || "-"}</td>
@@ -149,7 +162,14 @@ const ContactUsListPage = () => {
                       <div className="flex items-center gap-3 text-center">
                         <button
                           title="View Details"
-                          onClick={() => navigate(`/contact/${item._id}?page=${page}`)}
+                          onClick={(e) => {
+                            if (e.ctrlKey || e.metaKey || e.button === 1) {
+                              window.open(`/contact/${item._id}?page=${page}`, "_blank");
+                              return;
+                            } else {
+                              navigate(`/contact/${item._id}?page=${page}`)
+                            }
+                          }}
                           className="rounded-full border p-2 text-slate-500 hover:text-slate-900"
                         >
                           <FaRegEye size={16} />
@@ -178,12 +198,12 @@ const ContactUsListPage = () => {
         )}
       </div>
       <ConfirmModal
-  isOpen={modalOpen}
-  title="Confirm Delete"
-  message="Are you sure you want to delete this message?"
-  onConfirm={handleConfirmDelete}
-  onCancel={handleCancelDelete}
-/>
+        isOpen={modalOpen}
+        title="Confirm Delete"
+        message="Are you sure you want to delete this message?"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+      />
     </div>
   );
 };
