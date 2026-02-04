@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams, useSearchParams  } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import PageHeader from "../../components/PageHeader";
 import ReactQuill from "react-quill-new";
 import "react-quill-new/dist/quill.snow.css";
@@ -14,6 +14,12 @@ import {
 import { uploadImage } from "../../store/slices/imageUpload";
 import { toast } from "react-toastify";
 import ImageUploader from "../../UI/ImageUpload";
+
+const IMAGE_URL = import.meta.env.VITE_API_URL_IMAGE;
+const fixImageUrl = (url) => {
+  if (!url || typeof url !== "string") return url;
+  return url.startsWith("http") ? url : `${IMAGE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+};
 
 const quillModules = {
   toolbar: [
@@ -34,7 +40,6 @@ const quillFormats = [
   "underline",
   "strike",
   "list",
-  "bullet",
   "blockquote",
   "code-block",
   "align",
@@ -52,7 +57,7 @@ const requiredFields = [
 
 const CompanyFormPage = () => {
   const { companyId } = useParams();
-       const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const isEditMode = Boolean(companyId);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -179,7 +184,7 @@ const CompanyFormPage = () => {
 
         robots: selectedCompany.robots,
       });
-      setPreviewImage(selectedCompany.companyImage || "");
+      setPreviewImage(fixImageUrl(selectedCompany.companyImage || ""));
     }
   }, [isEditMode, selectedCompany]);
 
@@ -293,26 +298,26 @@ const CompanyFormPage = () => {
       description: form.description || "",
       websiteAddress: form.websiteAddress?.trim() || "",
       totalRating: form.totalRating || 0,
-      isRecommended :form.isRecommended || false ,
+      isRecommended: form.isRecommended || false,
       averageRating: form.averageRating || 0,
       companyImage: form.companyImage || "",
       extractor: form.extractor
         ? form.extractor
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
         : [],
       brokerSites: form.brokerSites
         ? form.brokerSites
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
         : [],
       features: form.features
         ? form.features
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
         : [],
       metaTitle: form.metaTitle?.trim() || "",
       metaDescription: form.metaDescription?.trim() || "",
@@ -403,14 +408,14 @@ const CompanyFormPage = () => {
               variant: "white",
               className:
                 "border border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-white",
-                onClick: () => {
+              onClick: () => {
                 const page = searchParams.get('page');
                 const redirectUrl = page ? `/companies?page=${page}` : "/companies";
                 navigate(redirectUrl);
               },
             },
           ],
-            [navigate, searchParams]
+          [navigate, searchParams]
         )}
       />
 
@@ -442,10 +447,9 @@ const CompanyFormPage = () => {
                   value={form[field.name] ?? ""}
                   onChange={handleChange}
                   className={`mt-1 w-full rounded-xl border px-3 py-2 text-sm text-slate-900 outline-none transition
-                    ${
-                      errors[field.name]
-                        ? "border-red-400 focus:border-red-500"
-                        : "border-slate-200 focus:border-primary"
+                    ${errors[field.name]
+                      ? "border-red-400 focus:border-red-500"
+                      : "border-slate-200 focus:border-primary"
                     }`}
                 />
                 {errors[field.name] && (
@@ -513,18 +517,35 @@ const CompanyFormPage = () => {
             </label>
           </div> */}
           <div className="mt-4">
-            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
               Description
+              {/* Tooltip */}
+              <span className="relative flex items-center group">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full border border-slate-300 text-[10px] font-bold text-slate-500 cursor-pointer select-none">
+                  i
+                </span>
+
+                {/* Tooltip content */}
+                <span className="pointer-events-none absolute left-1/2 top-full z-20 mt-2 w-72 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-xs font-normal text-white opacity-0 shadow-xl transition-opacity duration-200 group-hover:opacity-100">
+                  Please use <i>##</i> for H2 tags and <i>#</i> for H3 tags. The
+                  remaining text should stay unchanged, and please ensure the
+                  content matches what is provided in the CSV file.
+                </span>
+              </span>
             </label>
+
             <div className="mt-2 rounded-2xl border border-slate-200 p-1">
-              <ReactQuill
+              <textarea
+                name="description"
                 value={form.description}
-                onChange={(value) =>
-                  setForm((prev) => ({ ...prev, description: value }))
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
                 }
-                modules={quillModules}
-                formats={quillFormats}
-                className="rounded-2xl [&_.ql-container]:rounded-b-2xl [&_.ql-toolbar]:rounded-t-2xl"
+                rows={10}
+                className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-primary focus:ring-2 focus:ring-secondary"
               />
             </div>
           </div>
@@ -537,9 +558,14 @@ const CompanyFormPage = () => {
               <div className="mt-3 rounded-2xl border border-slate-100 bg-slate-50/60 p-3">
                 <div className="relative">
                   <img
-                    src={`${
-                      import.meta.env.VITE_API_URL_IMAGE
-                    }/${previewImage}`}
+                    src={
+                      typeof previewImage === "string"
+                        ? previewImage.startsWith("http")
+                          ? previewImage
+                          : `${import.meta.env.VITE_API_URL_IMAGE
+                          }/${previewImage.replace(/^\//, "")}`
+                        : ""
+                    }
                     alt="Preview"
                     className="h-56 w-full rounded-xl object-cover"
                   />
@@ -735,8 +761,8 @@ const CompanyFormPage = () => {
               {submitting
                 ? "Saving..."
                 : isEditMode
-                ? "Save Changes"
-                : "Create Company"}
+                  ? "Save Changes"
+                  : "Create Company"}
             </button>
 
             {isDisabled && (
@@ -744,8 +770,8 @@ const CompanyFormPage = () => {
                 {isUploading
                   ? "Please wait companyImage is uploading..."
                   : hasErrors
-                  ? "Please fill all required fields to enable Save"
-                  : ""}
+                    ? "Please fill all required fields to enable Save"
+                    : ""}
               </p>
             )}
           </div>

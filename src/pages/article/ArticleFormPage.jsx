@@ -20,6 +20,11 @@ import {
 import { toast } from "react-toastify";
 import ImageUploader from "../../UI/ImageUpload";
 
+const IMAGE_URL = import.meta.env.VITE_API_URL_IMAGE;
+const fixImageUrl = (url) => {
+  if (!url || typeof url !== "string") return url;
+  return url.startsWith("http") ? url : `${IMAGE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+};
 const quillModules = {
   toolbar: [
     [{ header: [1, 2, 3, false] }],
@@ -39,7 +44,6 @@ const quillFormats = [
   "underline",
   "strike",
   "list",
-  "bullet",
   "blockquote",
   "code-block",
   "align",
@@ -49,13 +53,12 @@ const quillFormats = [
 
 const ArticleFormPage = () => {
   const { articleId } = useParams();
-        const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const isEditMode = Boolean(articleId);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { selectedArticle } = useSelector((state) => state.articles);
   const { categoriesAll } = useSelector((state) => state.categories);
-  // console.log(categoriesAll )
   const [form, setForm] = useState({
     title: "",
     slug: "",
@@ -146,7 +149,7 @@ const ArticleFormPage = () => {
 
         robots: selectedArticle.robots,
       });
-      setPreviewImage(selectedArticle.image || "");
+      setPreviewImage(fixImageUrl(selectedArticle.image || ""));
     }
   }, [isEditMode, selectedArticle]);
 
@@ -157,7 +160,7 @@ const ArticleFormPage = () => {
         variant: "white",
         className:
           "border border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-white",
-     onClick: () => {
+        onClick: () => {
           const page = searchParams.get('page');
           const redirectUrl = page ? `/articles?page=${page}` : "/articles";
           navigate(redirectUrl);
@@ -346,7 +349,7 @@ const ArticleFormPage = () => {
               <ReactQuill
                 value={form.description}
                 onChange={(value) =>
-                  setForm((prev) => ({ ...prev, description: value }))
+                  setForm((prev) => ({ ...prev, description: value.replace(/&nbsp;/g, " ") }))
                 }
                 modules={quillModules}
                 formats={quillFormats}
@@ -551,8 +554,8 @@ const ArticleFormPage = () => {
               {submitting
                 ? "Saving..."
                 : isEditMode
-                ? "Save Changes"
-                : "Create Article"}
+                  ? "Save Changes"
+                  : "Create Article"}
             </button>
           </div>
         </div>

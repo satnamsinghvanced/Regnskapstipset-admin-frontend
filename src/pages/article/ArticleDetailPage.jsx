@@ -1,18 +1,24 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams, useSearchParams  } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import PageHeader from "../../components/PageHeader";
 import {
   clearSelectedArticle,
   getArticleById,
 } from "../../store/slices/articleSlice";
 
+const IMAGE_URL = import.meta.env.VITE_API_URL_IMAGE;
+const fixImageUrl = (url) => {
+  if (!url || typeof url !== "string") return url;
+  return url.startsWith("http") ? url : `${IMAGE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
 const ArticleDetailPage = () => {
   const { articleId } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { selectedArticle, loading } = useSelector((state) => state.articles);
-        const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const page = searchParams.get("page");
 
   useEffect(() => {
@@ -30,7 +36,7 @@ const ArticleDetailPage = () => {
       variant: "white",
       className:
         "border border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-white",
-       onClick: () => {
+      onClick: () => {
         const redirectUrl = page ? `/articles?page=${page}` : "/articles";
         navigate(redirectUrl);
       },
@@ -40,7 +46,7 @@ const ArticleDetailPage = () => {
       variant: "primary",
       className:
         "!bg-primary !text-white !border-primary hover:!bg-secondary hover:!border-secondary",
-     onClick: () => navigate(`/articles/${articleId}/edit${page ? `?page=${page}` : ""}`),
+      onClick: () => navigate(`/articles/${articleId}/edit${page ? `?page=${page}` : ""}`),
     },
   ];
 
@@ -79,7 +85,7 @@ const ArticleDetailPage = () => {
       <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
         {selectedArticle.image && (
           <img
-            src={selectedArticle.image}
+            src={fixImageUrl(selectedArticle.image)}
             alt={selectedArticle.title}
             className="h-72 w-full rounded-t-2xl object-cover"
           />
@@ -103,12 +109,12 @@ const ArticleDetailPage = () => {
                 {selectedArticle.createdBy?.username || "N/A"}
               </p>
             </div> */}
-             <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
+            <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Article Position
               </p>
               <p className="mt-1 text-base font-semibold text-slate-900">
-                {selectedArticle.articlePosition || 0 }
+                {selectedArticle.articlePosition || 0}
               </p>
             </div>
             <div className="rounded-xl border border-slate-100 bg-slate-50/60 p-4">
@@ -127,7 +133,7 @@ const ArticleDetailPage = () => {
               </p>
               <div className="flex flex-wrap gap-2 mt-1">
                 {Array.isArray(selectedArticle.articleTags) &&
-                selectedArticle.articleTags.length > 0 ? (
+                  selectedArticle.articleTags.length > 0 ? (
                   selectedArticle.articleTags.map((tag, index) => (
                     <span
                       key={index}
@@ -167,7 +173,7 @@ const ArticleDetailPage = () => {
               }}
             />
           </div>
-             <div className="rounded-xl mt-6 p-5 border border-slate-200 ">
+          <div className="rounded-xl mt-6 p-5 border border-slate-200 ">
             <p className="text-xs font-semibold uppercase text-slate-600 mb-4">
               SEO Information
             </p>

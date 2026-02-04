@@ -14,6 +14,13 @@ import { RiDeleteBin5Line } from "react-icons/ri";
 import ImageUploader from "../../UI/ImageUpload";
 import { getCompaniesAll } from "../../store/slices/companySlice";
 import ReactQuill from "react-quill-new";
+
+const IMAGE_URL = import.meta.env.VITE_API_URL_IMAGE;
+const fixImageUrl = (url) => {
+  if (!url || typeof url !== "string") return url;
+  return url.startsWith("http") ? url : `${IMAGE_URL}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
 const quillModules = {
   toolbar: [
     [{ header: [1, 2, 3, false] }],
@@ -53,7 +60,7 @@ function labelFor(name) {
 
 const CountiesFormPage = () => {
   const { countyId } = useParams();
-       const [searchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const isEditMode = Boolean(countyId);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -138,7 +145,9 @@ const CountiesFormPage = () => {
         icon: selectedCounty.icon || "",
 
         companies: Array.isArray(selectedCounty.companies)
-          ? selectedCounty.companies.map((c, index) => ({
+          ? selectedCounty.companies
+            .filter((c) => c.companyId)
+            .map((c, index) => ({
               companyId: String(c.companyId._id || c.companyId),
               rank: c.rank ?? index + 1,
               isRecommended: !!c.isRecommended,
@@ -157,34 +166,34 @@ const CountiesFormPage = () => {
         ogDescription: selectedCounty.ogDescription || "",
         ogImage: selectedCounty.ogImage || "",
         ogType: selectedCounty.ogType || "website",
-        //New From  meglertip
+
         robots:
           typeof selectedCounty.robots === "string"
             ? (() => {
-                try {
-                  return JSON.parse(selectedCounty.robots);
-                } catch {
-                  return {
-                    noindex: false,
-                    nofollow: false,
-                    noarchive: false,
-                    nosnippet: false,
-                    noimageindex: false,
-                    notranslate: false,
-                  };
-                }
-              })()
+              try {
+                return JSON.parse(selectedCounty.robots);
+              } catch {
+                return {
+                  noindex: false,
+                  nofollow: false,
+                  noarchive: false,
+                  nosnippet: false,
+                  noimageindex: false,
+                  notranslate: false,
+                };
+              }
+            })()
             : selectedCounty.robots || {
-                noindex: false,
-                nofollow: false,
-                noarchive: false,
-                nosnippet: false,
-                noimageindex: false,
-                notranslate: false,
-              },
+              noindex: false,
+              nofollow: false,
+              noarchive: false,
+              nosnippet: false,
+              noimageindex: false,
+              notranslate: false,
+            },
       });
 
-      setPreviewImage(selectedCounty.icon || "");
+      setPreviewImage(fixImageUrl(selectedCounty.icon || ""));
     }
   }, [isEditMode, selectedCounty]);
 
@@ -331,13 +340,11 @@ const CountiesFormPage = () => {
         ).unwrap();
         toast.success("County updated!");
       } else {
-        await dispatch(
-          createCounty({ countyData: payload, isFormData })
-        ).unwrap();
+        await dispatch(createCounty({ countyData: payload, isFormData })).unwrap();
         toast.success("County created!");
       }
 
-    const page = searchParams.get('page');
+      const page = searchParams.get('page');
       const redirectUrl = page ? `/counties?page=${page}` : "/counties";
       navigate(redirectUrl);
     } catch (err) {
@@ -366,7 +373,7 @@ const CountiesFormPage = () => {
               variant: "white",
               className:
                 "border border-slate-300 text-slate-700 hover:border-slate-400 hover:bg-white",
-           onClick: () => {
+              onClick: () => {
                 const page = searchParams.get('page');
                 const redirectUrl = page ? `/counties?page=${page}` : "/counties";
                 navigate(redirectUrl);
@@ -399,10 +406,9 @@ const CountiesFormPage = () => {
                   value={form[field.name] ?? ""}
                   onChange={handleChange}
                   className={`mt-1 w-full rounded-xl border px-3 py-2 text-sm text-slate-900 outline-none transition
-                    ${
-                      errors[field.name]
-                        ? "border-red-400 focus:border-red-500"
-                        : "border-slate-200 focus:border-primary"
+                    ${errors[field.name]
+                      ? "border-red-400 focus:border-red-500"
+                      : "border-slate-200 focus:border-primary"
                     }`}
                 />
                 {errors[field.name] && (
@@ -825,8 +831,8 @@ const CountiesFormPage = () => {
               {submitting
                 ? "Saving..."
                 : isEditMode
-                ? "Save Changes"
-                : "Create County"}
+                  ? "Save Changes"
+                  : "Create County"}
             </button>
 
             {isDisabled && hasErrors && (
