@@ -2,8 +2,9 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import api from "../../api/axios";
 import {
   fetchPartnerById,
   updatePartner,
@@ -214,7 +215,7 @@ export const PartnerEditPage = () => {
       const result = await dispatch(updatePartner({ id, data: payload }));
       if (result?.payload?.success) {
         toast.success("Partner updated successfully!");
-        navigate("/partners");
+        navigate(`/partners?page=${page}`);
       } else {
         toast.error(result.payload?.message || "Failed to update partner.");
       }
@@ -227,6 +228,13 @@ export const PartnerEditPage = () => {
   const mergedQuestions = [{ question: "leadType" }, ...allQuestions].filter(
     (q, i, arr) => arr.findIndex((x) => x.question === q.question) === i
   );
+ const [searchParams, setSearchParams] = useSearchParams();
+  const getInitialPage = () => {
+    const pageParam = searchParams.get("page");
+    return pageParam ? parseInt(pageParam, 10) || 1 : 1;
+  };
+
+  const [page, setPage] = useState(getInitialPage);
 
   if (loading) return <p>Loading...</p>;
 
@@ -242,7 +250,7 @@ export const PartnerEditPage = () => {
 
         <div>
           <button
-            onClick={() => navigate("/partners")}
+             onClick={() => navigate(`/partners?page=${page}`)}
             className="btn btn-white btn-sm rounded-lg border-slate-300 text-slate-700 px-6 py-2"
           >
             Back to Partners
